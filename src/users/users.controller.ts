@@ -16,27 +16,29 @@ import { UserLoginDto } from './dto/user-login.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private usersService: UsersService) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    const { name, email, password } = createUserDto;
+    await this.usersService.create(name, email, password);
   }
 
   @Post('/verify')
   async verifyEmail(@Query() dto: VerifyEmailDto) {
-    console.log(dto);
-    return;
+    const { singupVerifyToken } = dto;
+    console.log(singupVerifyToken);
+    return await this.usersService.verifyEmail(singupVerifyToken);
   }
 
   @Post('/login')
   async login(@Body() dto: UserLoginDto) {
-    console.log(dto);
-    return;
+    const { email, password } = dto;
+    return await this.usersService.login(email, password);
   }
   @Get('/:id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  async getUserInfo(@Param('id') id: string) {
+    return this.usersService.getUserInfo(+id);
   }
 
   @Patch('/:id')

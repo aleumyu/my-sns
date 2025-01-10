@@ -7,6 +7,7 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return this.appService.getHello();
+    console.log(process.env.DB_HOST);
+    return process.env.DB_HOST;
   }
 }
