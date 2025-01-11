@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -37,7 +38,7 @@ export class UsersController {
     return await this.usersService.login(email, password);
   }
   @Get('/:id')
-  async getUserInfo(@Param('id') id: string) {
+  async getUserInfo(@Param('id', ParseIntPipe) id: string) {
     return this.usersService.getUserInfo(+id);
   }
 
