@@ -1,37 +1,38 @@
 import * as uuid from 'uuid';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 // import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UsersService {
   // constructor(private emailService: EmailService) {}
-  constructor() {}
+  constructor(private prisma: PrismaService) {}
 
-  async create(name: string, email: string, password: string) {
-    await this.checkUserExists(email);
+  async create(CreateUserDto: CreateUserDto) {
+    await this.checkUserExists(CreateUserDto.email);
 
     // const token = uuid.v1();
 
-    await this.saveUser(name, email, password);
+    await this.saveUser(CreateUserDto);
     // await this.sendMemberJoinEmail(email, token);
   }
 
-  //TODO after setup DB
-  private checkUserExists(email: string) {
-    return false;
+  private async checkUserExists(email: string) {
+    return await this.prisma.user.findFirst({ where: { email } });
   }
 
   //TODO after setup DB
   private async saveUser(
-    name: string,
-    email: string,
-    password: string,
+    CreateUserDto: CreateUserDto,
     // token: string,
   ) {
-
-    const userExist = await 
-    return false;
+    const userExists = await this.checkUserExists(CreateUserDto.email);
+    if (userExists) {
+      throw new HttpException('user_already_exist', HttpStatus.CONFLICT);
+    }
+    return await this.prisma.user.create({ data: CreateUserDto });
   }
 
   //TODO after setup DB

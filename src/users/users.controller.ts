@@ -21,14 +21,12 @@ export class UsersController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    const { name, email, password } = createUserDto;
-    await this.usersService.create(name, email, password);
+    await this.usersService.create(createUserDto);
   }
 
   @Post('/verify')
   async verifyEmail(@Query() dto: VerifyEmailDto) {
     const { singupVerifyToken } = dto;
-    console.log(singupVerifyToken);
     return await this.usersService.verifyEmail(singupVerifyToken);
   }
 
