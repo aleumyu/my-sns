@@ -8,7 +8,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    console.log(process.env.DB_HOST);
     return process.env.DB_HOST;
   }
 }
