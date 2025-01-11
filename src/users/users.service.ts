@@ -11,9 +11,9 @@ export class UsersService {
   async create(name: string, email: string, password: string) {
     await this.checkUserExists(email);
 
-    const token = uuid.v1();
+    // const token = uuid.v1();
 
-    await this.saveUser(name, email, password, token);
+    await this.saveUser(name, email, password);
     // await this.sendMemberJoinEmail(email, token);
   }
 
@@ -23,12 +23,14 @@ export class UsersService {
   }
 
   //TODO after setup DB
-  private saveUser(
+  private async saveUser(
     name: string,
     email: string,
     password: string,
-    token: string,
+    // token: string,
   ) {
+
+    const userExist = await 
     return false;
   }
 
