@@ -54,11 +54,12 @@ $ npm run test:cov
 
 ## Resources
 
-## Users
+# Users
 
-ROUTE | HTTP Method  
-/users | POST  
-/users/login | POST
-/users/:id | GET
-/users/:id | PATCH
-/users/:id | DELETE
+| ROUTE        | Method |
+| ------------ | :----: |
+| /users       |  POST  |
+| /users/login |  POST  |
+| /users/:id   |  GET   |
+| /users/:id   | PATCH  |
+| /users/:id   | DELETE |
