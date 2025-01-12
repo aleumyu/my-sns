@@ -1,10 +1,12 @@
+import { compare, hash } from 'bcrypt';
+
 import {
   Injectable,
   HttpException,
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
-// import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
@@ -21,7 +23,6 @@ export class UsersService {
     if (userExists) {
       throw new HttpException('user_already_exist', HttpStatus.CONFLICT);
     }
-
     await this.saveUser(CreateUserDto);
   }
 
@@ -30,13 +31,23 @@ export class UsersService {
   }
 
   private async saveUser(CreateUserDto: CreateUserDto) {
-    return await this.prisma.user.create({ data: CreateUserDto });
+    return await this.prisma.user.create({
+      data: {
+        ...CreateUserDto,
+        password: await hash(CreateUserDto.password, 10),
+      },
+    });
   }
 
-  async login(email: string) {
+  async login(email: string, password: string) {
     const user = await this.checkUserExists(email);
     if (!user) {
       throw new NotFoundException('User does not exist');
+    }
+
+    const samePassword = await compare(password, user.password);
+    if (!samePassword) {
+      throw new HttpException('invalid_credentials', HttpStatus.UNAUTHORIZED);
     }
 
     return this.authService.login({
@@ -45,9 +56,10 @@ export class UsersService {
       email: user.email,
     });
   }
-  findAll() {
-    return `This action returns all user`;
-  }
+
+  // findAll() {
+  //   return `This action returns all user`;
+  // }
 
   async getUserInfo(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -61,11 +73,32 @@ export class UsersService {
     };
   }
 
-  // update(id: number, updateUserDto: UpdateUserDto) {
-  //   return `This action updates a #${id} user`;
-  // }
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    if (!user) {
+      throw new HttpException('User does not exist', HttpStatus.UNAUTHORIZED);
+    }
+    const samePassword = await compare(updateUserDto.password, user.password);
+    console.log({ samePassword });
+    if (!samePassword) {
+      throw new HttpException('invalid_credentials', HttpStatus.UNAUTHORIZED);
+    }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
+    return await this.prisma.user.update({
+      where: { id },
+      data: { password: await hash(updateUserDto.newPassword, 10) },
+    });
+  }
+
+  async remove(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    if (!user) {
+      throw new HttpException('User does not exist', HttpStatus.UNAUTHORIZED);
+    }
+    return await this.prisma.user.delete({ where: { id } });
+  }
 }

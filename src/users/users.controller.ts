@@ -3,14 +3,14 @@ import {
   Get,
   Post,
   Body,
-  // Patch,
+  Patch,
   Param,
-  // Delete,
+  Delete,
   Headers,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-// import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserLoginDto } from './dto/user-login.dto';
 import { AuthService } from 'src/auth/auth.service';
 
@@ -28,8 +28,8 @@ export class UsersController {
 
   @Post('/login')
   async login(@Body() dto: UserLoginDto) {
-    const { email } = dto;
-    return await this.usersService.login(email);
+    const { email, password } = dto;
+    return await this.usersService.login(email, password);
   }
   @Get('/:id')
   async getUserInfo(@Headers() headers: any, @Param('id') userId: number) {
@@ -38,13 +38,13 @@ export class UsersController {
     return this.usersService.getUserInfo(userId);
   }
 
-  // @Patch('/:id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
+  @Patch('/:id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
 
-  // @Delete('/:id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Delete('/:id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(+id);
+  }
 }
