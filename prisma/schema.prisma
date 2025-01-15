@@ -15,10 +15,49 @@ datasource db {
 
 
 model User {
-  id        Int     @id @default(autoincrement())
-  // createdAt DateTime @default(now())
-  // updatedAt DateTime @updatedAt
-  email     String  @unique
-  name String?
-  password  String
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  password      String
+  profile       Profile?
+}
+
+model  Profile {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @unique
+  user          User      @relation(fields: [userId], references: [id])
+  name          String?
+  createdAt     DateTime  @default(now())
+  Posts         Post[]
+  Likes         Like[]
+  followers     Follow[]  @relation("follower")
+  followees     Follow[]  @relation("followee")
+}
+
+model Follow {
+  id            Int       @id @default(autoincrement())
+  followerId    Int
+  userProfile1  Profile   @relation(fields: [followerId], references: [id], name: "follower")
+  followeeId    Int
+  userProfile2  Profile   @relation(fields: [followeeId], references: [id], name: "followee")
+
+}
+
+model Post {
+  id            Int       @id @default(autoincrement())
+  createdBy     Int
+  userProfile   Profile   @relation(fields: [createdBy], references: [id])
+  title         String    @unique
+  body          String?   @db.Text
+  status        String
+  createdAt     DateTime  @default(now())
+  likes         Like[]
+}
+
+model Like {
+  id            Int       @id @default(autoincrement())
+  likedBy       Int
+  userProfile   Profile   @relation(fields: [likedBy], references: [id])
+  postId        Int
+  post          Post      @relation(fields: [postId], references: [id])
+
 }

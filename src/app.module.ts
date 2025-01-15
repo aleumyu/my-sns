@@ -7,6 +7,10 @@ import { UsersModule } from './users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
+import { FollowModule } from './follow/follow.module';
+import { ProfilesModule } from './profiles/profiles.module';
+import { PostsModule } from './posts/posts.module';
+import { LikesModule } from './likes/likes.module';
 import authConfig from './config/authConfig';
 
 @Module({
@@ -19,6 +23,10 @@ import authConfig from './config/authConfig';
       load: [authConfig],
       isGlobal: true,
     }),
+    FollowModule,
+    ProfilesModule,
+    PostsModule,
+    LikesModule,
   ],
   controllers: [AppController],
   providers: [AppService, AuthService],
