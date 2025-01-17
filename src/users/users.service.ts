@@ -10,12 +10,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
+import { ProfilesService } from 'src/profiles/profiles.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
+    private ProfilesService: ProfilesService,
   ) {}
 
   async create(CreateUserDto: CreateUserDto) {
@@ -23,7 +25,11 @@ export class UsersService {
     if (userExists) {
       throw new HttpException('user_already_exist', HttpStatus.CONFLICT);
     }
-    await this.saveUser(CreateUserDto);
+    // How to handle prisma argument?
+    return this.prisma.$transaction(async (prisma) => {
+      const user = await this.saveUser(CreateUserDto);
+      await this.ProfilesService.create(user.id);
+    });
   }
 
   private async checkUserExists(email: string) {
@@ -52,7 +58,6 @@ export class UsersService {
 
     return this.authService.login({
       id: user.id,
-      name: user.name,
       email: user.email,
     });
   }
@@ -68,7 +73,6 @@ export class UsersService {
     }
     return {
       id: user.id,
-      name: user.name,
       email: user.email,
     };
   }
@@ -81,7 +85,6 @@ export class UsersService {
       throw new HttpException('User does not exist', HttpStatus.UNAUTHORIZED);
     }
     const samePassword = await compare(updateUserDto.password, user.password);
-    console.log({ samePassword });
     if (!samePassword) {
       throw new HttpException('invalid_credentials', HttpStatus.UNAUTHORIZED);
     }
