@@ -56,9 +56,12 @@ export class UsersService {
       throw new HttpException('invalid_credentials', HttpStatus.UNAUTHORIZED);
     }
 
+    const profile = await this.ProfilesService.findOne(user.id);
+
     return this.authService.login({
       userId: user.id,
       email: user.email,
+      profileId: profile.id,
     });
   }
 

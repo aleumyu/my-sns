@@ -18,15 +18,15 @@ export class FollowController {
 
   @Post()
   create(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('profileId') profileId: string,
     @Body() createFollowDto: CreateFollowDto,
   ) {
-    return this.followService.create(createFollowDto, userId);
+    return this.followService.create(createFollowDto, profileId);
   }
 
   @Get()
   findAll(@CurrentUser('userId') userId: string) {
-    return this.followService.findAllFollowers(userId);
+    return this.followService.findAllFollows(userId);
   }
 
   @Get(':id')

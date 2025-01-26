@@ -10,11 +10,10 @@ export class FollowService {
     private profilesService: ProfilesService,
   ) {}
 
-  async create(createFollowDto: CreateFollowDto, userId: string) {
-    const followerProfile = await this.profilesService.findOne(userId);
+  async create(createFollowDto: CreateFollowDto, profileId: string) {
     const alreadyFollowing = await this.prisma.follow.findFirst({
       where: {
-        followerId: followerProfile.id,
+        followerId: profileId,
         followeeId: createFollowDto.followeeId,
       },
     });
@@ -23,14 +22,16 @@ export class FollowService {
     }
     return await this.prisma.follow.create({
       data: {
-        followerId: followerProfile.id,
+        followerId: profileId,
         followeeId: createFollowDto.followeeId,
       },
     });
   }
 
-  async findAllFollowers(followeeId: string) {
-    return await this.prisma.follow.findMany({ where: { followeeId } });
+  async findAllFollows(profileId: string) {
+    return await this.prisma.follow.findMany({
+      where: { followerId: profileId },
+    });
   }
 
   findOne(id: string) {

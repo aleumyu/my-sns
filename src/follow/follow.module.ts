@@ -8,5 +8,6 @@ import { ProfilesModule } from 'src/profiles/profiles.module';
   controllers: [FollowController],
   providers: [FollowService],
   imports: [PrismaModule, ProfilesModule],
+  exports: [FollowService],
 })
 export class FollowModule {}

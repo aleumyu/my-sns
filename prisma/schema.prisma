@@ -44,8 +44,8 @@ model Follow {
 
 model Post {
   id            String       @id @default(uuid())
-  createdBy     String
-  userProfile   Profile   @relation(fields: [createdBy], references: [id])
+  authorId      String
+  userProfile   Profile   @relation(fields: [authorId], references: [id])
   title         String    @unique
   body          String?   @db.Text
   status        String

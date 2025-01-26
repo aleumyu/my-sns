@@ -6,11 +6,13 @@ import { ConfigType } from '@nestjs/config';
 interface User {
   userId: string;
   email: string;
+  profileId: string;
 }
 
 export interface JwtPayload {
   userId: string;
   email: string;
+  profileId: string;
 }
 
 @Injectable()
@@ -23,6 +25,7 @@ export class AuthService {
     const payload: JwtPayload = {
       userId: user.userId,
       email: user.email,
+      profileId: user.profileId,
     };
 
     const token = jwt.sign(payload, this.config.jwtSecret, {
