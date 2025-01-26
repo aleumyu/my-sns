@@ -4,7 +4,12 @@ import authConfig from 'src/config/authConfig';
 import { ConfigType } from '@nestjs/config';
 
 interface User {
-  id: string;
+  userId: string;
+  email: string;
+}
+
+export interface JwtPayload {
+  userId: string;
   email: string;
 }
 
@@ -15,29 +20,28 @@ export class AuthService {
   ) {}
 
   login(user: User) {
-    const payload = { ...user };
+    const payload: JwtPayload = {
+      userId: user.userId,
+      email: user.email,
+    };
 
-    return jwt.sign(payload, this.config.jwtSecret, {
-      id: '1d',
+    const token = jwt.sign(payload, this.config.jwtSecret, {
+      // id: '1d',
       audience: 'example.com',
       issuer: 'example.com',
     });
+    console.log({ token });
+    return token;
   }
 
   verify(jwtString: string) {
     try {
-      const payload = jwt.verify(jwtString, this.config.jwtSecret) as (
-        | jwt.JwtPayload
-        | string
-      ) &
-        User;
+      const payload = jwt.verify(
+        jwtString,
+        this.config.jwtSecret,
+      ) as JwtPayload;
 
-      const { id, email } = payload;
-
-      return {
-        userId: id,
-        email,
-      };
+      return payload;
     } catch (e) {
       throw new UnauthorizedException(e);
     }

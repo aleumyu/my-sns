@@ -12,6 +12,8 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import authConfig from './config/authConfig';
+import { AuthGuard } from './auth/auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -29,6 +31,13 @@ import authConfig from './config/authConfig';
     LikesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AuthService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    AppService,
+    AuthService,
+  ],
 })
 export class AppModule {}

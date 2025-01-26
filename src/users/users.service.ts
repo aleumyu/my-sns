@@ -57,7 +57,7 @@ export class UsersService {
     }
 
     return this.authService.login({
-      id: user.id,
+      userId: user.id,
       email: user.email,
     });
   }
