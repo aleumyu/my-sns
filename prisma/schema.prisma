@@ -24,7 +24,7 @@ model User {
 model  Profile {
   id            String       @id @default(uuid())
   userId        String       @unique
-  user          User      @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
   name          String?
   createdAt     DateTime  @default(now())
   Posts         Post[]

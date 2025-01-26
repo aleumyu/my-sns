@@ -1,15 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateFollowDto } from './dto/create-follow.dto';
 import { UpdateFollowDto } from './dto/update-follow.dto';
-
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ProfilesService } from 'src/profiles/profiles.service';
 @Injectable()
 export class FollowService {
-  create(createFollowDto: CreateFollowDto) {
-    return 'This action adds a new follow';
+  constructor(
+    private prisma: PrismaService,
+    private profilesService: ProfilesService,
+  ) {}
+
+  async create(createFollowDto: CreateFollowDto, userId: string) {
+    const followerProfile = await this.profilesService.findOne(userId);
+    const alreadyFollowing = await this.prisma.follow.findFirst({
+      where: {
+        followerId: followerProfile.id,
+        followeeId: createFollowDto.followeeId,
+      },
+    });
+    if (alreadyFollowing) {
+      throw new BadRequestException('User already followed');
+    }
+    return await this.prisma.follow.create({
+      data: {
+        followerId: followerProfile.id,
+        followeeId: createFollowDto.followeeId,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all follow`;
+  async findAllFollowers(followeeId: string) {
+    return await this.prisma.follow.findMany({ where: { followeeId } });
   }
 
   findOne(id: string) {

@@ -1,1 +1,4 @@
-export class CreateFollowDto {}
+export class CreateFollowDto {
+  // followerId: string;
+  followeeId: string;
+}

@@ -10,19 +10,23 @@ import {
 import { FollowService } from './follow.service';
 import { CreateFollowDto } from './dto/create-follow.dto';
 import { UpdateFollowDto } from './dto/update-follow.dto';
+import { CurrentUser } from 'src/current-user.decorator';
 
 @Controller('follow')
 export class FollowController {
   constructor(private readonly followService: FollowService) {}
 
   @Post()
-  create(@Body() createFollowDto: CreateFollowDto) {
-    return this.followService.create(createFollowDto);
+  create(
+    @CurrentUser('userId') userId: string,
+    @Body() createFollowDto: CreateFollowDto,
+  ) {
+    return this.followService.create(createFollowDto, userId);
   }
 
   @Get()
-  findAll() {
-    return this.followService.findAll();
+  findAll(@CurrentUser('userId') userId: string) {
+    return this.followService.findAllFollowers(userId);
   }
 
   @Get(':id')
