@@ -4,7 +4,7 @@ import authConfig from 'src/config/authConfig';
 import { ConfigType } from '@nestjs/config';
 
 interface User {
-  id: number;
+  id: string;
   email: string;
 }
 

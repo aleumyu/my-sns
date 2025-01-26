@@ -1,5 +1,5 @@
 export class CreateProfileDto {
-  userId: number;
+  userId: string;
   name?: string;
   createdAt: Date;
 }

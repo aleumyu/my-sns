@@ -25,7 +25,7 @@ export class UsersService {
     if (userExists) {
       throw new HttpException('user_already_exist', HttpStatus.CONFLICT);
     }
-    // How to handle prisma argument?
+    // Qustion: How to handle prisma argument?
     return this.prisma.$transaction(async (prisma) => {
       const user = await this.saveUser(CreateUserDto);
       await this.ProfilesService.create(user.id);
@@ -66,7 +66,7 @@ export class UsersService {
   //   return `This action returns all user`;
   // }
 
-  async getUserInfo(userId: number) {
+  async getUserInfo(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('User does not exist');
@@ -77,7 +77,7 @@ export class UsersService {
     };
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -95,7 +95,7 @@ export class UsersService {
     });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });

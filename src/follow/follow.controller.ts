@@ -27,16 +27,16 @@ export class FollowController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.followService.findOne(+id);
+    return this.followService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateFollowDto: UpdateFollowDto) {
-    return this.followService.update(+id, updateFollowDto);
+    return this.followService.update(id, updateFollowDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.followService.remove(+id);
+    return this.followService.remove(id);
   }
 }

@@ -12,15 +12,15 @@ export class FollowService {
     return `This action returns all follow`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} follow`;
   }
 
-  update(id: number, updateFollowDto: UpdateFollowDto) {
+  update(id: string, updateFollowDto: UpdateFollowDto) {
     return `This action updates a #${id} follow`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} follow`;
   }
 }

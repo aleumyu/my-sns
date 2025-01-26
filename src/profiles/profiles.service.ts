@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class ProfilesService {
   constructor(private prisma: PrismaService) {}
-  async create(userId: number) {
+  async create(userId: string) {
     const profileExists = await this.checkProfileExists(userId);
     if (profileExists) {
       throw new HttpException('profile_already_exist', HttpStatus.CONFLICT);
@@ -17,7 +17,7 @@ export class ProfilesService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const profile = await this.prisma.profile.findUnique({
       where: { id },
     });
@@ -31,7 +31,7 @@ export class ProfilesService {
     };
   }
 
-  async update(id: number, updateProfileDto: UpdateProfileDto) {
+  async update(id: string, updateProfileDto: UpdateProfileDto) {
     const profile = await this.prisma.profile.findUnique({ where: { id } });
     if (!profile) {
       throw new HttpException(
@@ -45,11 +45,11 @@ export class ProfilesService {
     });
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} profile`;
   }
 
-  private async checkProfileExists(userId: number) {
+  private async checkProfileExists(userId: string) {
     return await this.prisma.profile.findUnique({ where: { userId } });
   }
 }

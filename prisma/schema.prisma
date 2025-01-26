@@ -15,15 +15,15 @@ datasource db {
 
 
 model User {
-  id            Int       @id @default(autoincrement())
+  id            String       @id @default(uuid())
   email         String    @unique
   password      String
   profile       Profile?
 }
 
 model  Profile {
-  id            Int       @id @default(autoincrement())
-  userId        Int       @unique
+  id            String       @id @default(uuid())
+  userId        String       @unique
   user          User      @relation(fields: [userId], references: [id])
   name          String?
   createdAt     DateTime  @default(now())
@@ -34,17 +34,17 @@ model  Profile {
 }
 
 model Follow {
-  id            Int       @id @default(autoincrement())
-  followerId    Int
+  id            String       @id @default(uuid())
+  followerId    String
   userProfile1  Profile   @relation(fields: [followerId], references: [id], name: "follower")
-  followeeId    Int
+  followeeId    String
   userProfile2  Profile   @relation(fields: [followeeId], references: [id], name: "followee")
 
 }
 
 model Post {
-  id            Int       @id @default(autoincrement())
-  createdBy     Int
+  id            String       @id @default(uuid())
+  createdBy     String
   userProfile   Profile   @relation(fields: [createdBy], references: [id])
   title         String    @unique
   body          String?   @db.Text
@@ -54,10 +54,10 @@ model Post {
 }
 
 model Like {
-  id            Int       @id @default(autoincrement())
-  likedBy       Int
+  id            String       @id @default(uuid())
+  likedBy       String
   userProfile   Profile   @relation(fields: [likedBy], references: [id])
-  postId        Int
+  postId        String
   post          Post      @relation(fields: [postId], references: [id])
 
 }

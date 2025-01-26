@@ -32,7 +32,7 @@ export class UsersController {
     return await this.usersService.login(email, password);
   }
   @Get('/:id')
-  async getUserInfo(@Headers() headers: any, @Param('id') userId: number) {
+  async getUserInfo(@Headers() headers: any, @Param('id') userId: string) {
     const jwtString = headers.authorization.split('Bearer ')[1];
     this.authService.verify(jwtString);
     return this.usersService.getUserInfo(userId);
@@ -40,11 +40,11 @@ export class UsersController {
 
   @Patch('/:id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete('/:id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }
