@@ -39,7 +39,7 @@ model Follow {
   userProfile1  Profile   @relation(fields: [followerId], references: [id], name: "follower")
   followeeId    String
   userProfile2  Profile   @relation(fields: [followeeId], references: [id], name: "followee")
-
+  @@unique([followerId, followeeId])
 }
 
 model Post {
@@ -50,6 +50,7 @@ model Post {
   body          String?   @db.Text
   status        String
   createdAt     DateTime  @default(now())
+  likesCount    Int       @default(0)
   likes         Like[]
 }
 
@@ -60,4 +61,5 @@ model Like {
   postId        String
   post          Post      @relation(fields: [postId], references: [id])
 
+  @@unique([likedBy, postId])
 }
