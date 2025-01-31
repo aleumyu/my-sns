@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -17,6 +19,17 @@ import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
+    // CacheModule.register({
+    //   isGlobal: true,
+    //   ttl: 5000,
+    //   // max: 1000,
+    // }),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: 'localhost',
+      port: 6379,
+    }),
     UsersModule,
     PrismaModule,
     AuthModule,
