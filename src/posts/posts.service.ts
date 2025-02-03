@@ -11,27 +11,43 @@ export class PostsService {
     private readonly prisma: PrismaService,
     private readonly followService: FollowService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  ) {
+    // this.onModuleInit();
+  }
+
+  // async onModuleInit() {
+  //   try {
+  //     await this.cacheManager.set('test', 'value');
+
+  //     console.log('Cache test:', {
+  //       type: this.cacheManager.constructor,
+  //       store: this.cacheManager.stores,
+  //       // connection: this.cacheManager.stores?.client?.connected,
+  //     });
+  //   } catch (error) {
+  //     console.error('Cache test failed:', error);
+  //   }
+  // }
 
   async create(profileId: string, createPostDto: CreatePostDto) {
-    //create new post
-    //get the list of followers of the current user/profile
-    //update  their  cache - unshift the new post to the head
     const post = await this.prisma.post.create({
       data: {
         ...createPostDto,
         authorId: profileId,
       },
     });
-    console.log({ post });
 
-    const cachedData: any[] = await this.cacheManager.get(profileId);
-    console.log({ cachedData });
-    if (!cachedData) {
-      await this.cacheManager.set(profileId, [post]);
-    } else {
-      cachedData.unshift(post);
-      await this.cacheManager.set(profileId, cachedData);
+    const followers = await this.followService.findAllFollowers(profileId);
+    for (const followerId of followers) {
+      const cacheKey = `newFeedsFor:${profileId}`;
+      const cachedData: any[] = await this.cacheManager.get(followerId);
+      if (!cachedData) {
+        await this.cacheManager.set(cacheKey, [post]);
+        console.log(`Set new cache for ${cacheKey}`);
+      } else {
+        cachedData.unshift(post);
+        await this.cacheManager.set(profileId, cachedData);
+      }
     }
     return post;
   }
@@ -41,28 +57,28 @@ export class PostsService {
   }
 
   async findAllNew(profileId: string) {
-    // cache check
-    // if cache is there, return the cache
-    //if not,
-    //get the list of followees
-    //get the list of posts from the followees
-    //cache the list of posts in redis
-    //return the list of posts
-    const follows = await this.followService.findAllFollows(profileId);
-    const followeeIds = follows.map((follower) => follower.followeeId);
-    // use join to handle N+1 problem
-    const posts = await this.prisma.post.findMany({
-      relationLoadStrategy: 'join',
-      where: {
-        authorId: {
-          in: followeeIds,
+    console.log({ profileId });
+
+    // new feeds of the peolple I follow = followees
+    const cacheKey = `newFeedsFor:${profileId}`;
+    const cachedData: any[] = await this.cacheManager.get(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    } else {
+      const followees = await this.followService.findAllFollowees(profileId);
+      const posts = await this.prisma.post.findMany({
+        where: {
+          authorId: {
+            in: followees,
+          },
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-    return posts;
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      await this.cacheManager.set(cacheKey, posts);
+      return posts;
+    }
   }
 
   // findOne(id: number) {

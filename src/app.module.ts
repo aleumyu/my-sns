@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
+import { createKeyv } from '@keyv/redis';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,20 +16,17 @@ import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import authConfig from './config/authConfig';
 import { AuthGuard } from './auth/auth.guard';
-import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-    // CacheModule.register({
-    //   isGlobal: true,
-    //   ttl: 5000,
-    //   // max: 1000,
-    // }),
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
+      useFactory: async () => {
+        return {
+          ttl: 60000,
+          stores: [createKeyv('redis://localhost:6379')],
+        };
+      },
     }),
     UsersModule,
     PrismaModule,

@@ -34,6 +34,22 @@ export class FollowService {
     });
   }
 
+  async findAllFollowers(profileId: string) {
+    // profileId를 팔로우하는 사람들
+    const follows = await this.prisma.follow.findMany({
+      where: { followeeId: profileId },
+    });
+    return follows.map((follow) => follow.followerId);
+  }
+
+  async findAllFollowees(profileId: string) {
+    //profileId가 팔로우 하는 사람들
+    const follows = await this.prisma.follow.findMany({
+      where: { followerId: profileId },
+    });
+    return follows.map((follow) => follow.followeeId);
+  }
+
   findOne(id: string) {
     return `This action returns a #${id} follow`;
   }
