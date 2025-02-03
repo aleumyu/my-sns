@@ -1,15 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
-// import { UpdatePostDto } from './dto/update-post.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { FollowService } from 'src/follow/follow.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+
+import { PrismaService } from 'src/prisma/prisma.service';
+import { FollowService } from 'src/follow/follow.service';
+import SearchService from 'src/search/search.service';
+
 @Injectable()
 export class PostsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly followService: FollowService,
+    private postsSearchService: SearchService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     // this.onModuleInit();
@@ -37,13 +40,17 @@ export class PostsService {
       },
     });
 
+    //save to elasticsearch
+    if (post.status === 'SAVED') {
+      this.postsSearchService.indexPost(post);
+    }
+
     const followers = await this.followService.findAllFollowers(profileId);
     for (const followerId of followers) {
       const cacheKey = `newFeedsFor:${profileId}`;
       const cachedData: any[] = await this.cacheManager.get(followerId);
       if (!cachedData) {
         await this.cacheManager.set(cacheKey, [post]);
-        console.log(`Set new cache for ${cacheKey}`);
       } else {
         cachedData.unshift(post);
         await this.cacheManager.set(profileId, cachedData);
@@ -54,6 +61,17 @@ export class PostsService {
 
   findAll() {
     return `This action returns all posts`;
+  }
+
+  async searchForPosts(text: string) {
+    const results = await this.postsSearchService.search(text);
+    const ids = results.map((result: any) => result.id);
+    if (!ids.length) {
+      return [];
+    }
+    return this.prisma.post.findMany({
+      where: { id: { in: ids } },
+    });
   }
 
   async findAllNew(profileId: string) {
@@ -81,9 +99,9 @@ export class PostsService {
     }
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} post`;
-  // }
+  findOne(id: number) {
+    return `This action returns a #${id} post`;
+  }
 
   // update(id: number, updatePostDto: UpdatePostDto) {
   //   return `This action updates a #${id} post`;

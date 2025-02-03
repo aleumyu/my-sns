@@ -16,6 +16,7 @@ import { PostsModule } from './posts/posts.module';
 import { LikesModule } from './likes/likes.module';
 import authConfig from './config/authConfig';
 import { AuthGuard } from './auth/auth.guard';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AuthGuard } from './auth/auth.guard';
     ProfilesModule,
     PostsModule,
     LikesModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

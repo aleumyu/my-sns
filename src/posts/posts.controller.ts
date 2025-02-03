@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Body,
+  Query,
   // Patch,
   // Param,
   // Delete,
@@ -28,7 +29,10 @@ export class PostsController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('search') search: string) {
+    if (search) {
+      return this.postsService.searchForPosts(search);
+    }
     return this.postsService.findAll();
   }
 
