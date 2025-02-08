@@ -17,6 +17,7 @@ import { LikesModule } from './likes/likes.module';
 import authConfig from './config/authConfig';
 import { AuthGuard } from './auth/auth.guard';
 import { SearchModule } from './search/search.module';
+import { KafkaModule } from './kafka/kafka.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SearchModule } from './search/search.module';
     PostsModule,
     LikesModule,
     SearchModule,
+    KafkaModule,
   ],
   controllers: [AppController],
   providers: [

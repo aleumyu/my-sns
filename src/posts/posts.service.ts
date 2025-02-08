@@ -6,6 +6,7 @@ import { Cache } from 'cache-manager';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FollowService } from 'src/follow/follow.service';
 import SearchService from 'src/search/search.service';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Injectable()
 export class PostsService {
@@ -13,6 +14,7 @@ export class PostsService {
     private readonly prisma: PrismaService,
     private readonly followService: FollowService,
     private postsSearchService: SearchService,
+    private kafkaProducerService: KafkaProducerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     // this.onModuleInit();
@@ -40,22 +42,13 @@ export class PostsService {
       },
     });
 
-    //save to elasticsearch
+    //save to elasticsearch+cache
+    // Question: how to handle if there is an error and rollback??
     if (post.status === 'SAVED') {
-      await this.postsSearchService.indexPost(post);
+      await this.kafkaProducerService.emitCreatePostEsEvent(post);
+      await this.kafkaProducerService.emitCreatePostCacheEvent(profileId, post);
     }
 
-    const followers = await this.followService.findAllFollowers(profileId);
-    for (const followerId of followers) {
-      const cacheKey = `newFeedsFor:${profileId}`;
-      const cachedData: any[] = await this.cacheManager.get(followerId);
-      if (!cachedData) {
-        await this.cacheManager.set(cacheKey, [post]);
-      } else {
-        cachedData.unshift(post);
-        await this.cacheManager.set(profileId, cachedData);
-      }
-    }
     return post;
   }
 
@@ -111,6 +104,8 @@ export class PostsService {
   // }
 
   // remove(id: number) {
+  // should include logic to delete from elasticsearch
+  // should include logic to delete from cache
   //   return `This action removes a #${id} post`;
   // }
 }
