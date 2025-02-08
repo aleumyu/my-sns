@@ -42,7 +42,7 @@ export class PostsService {
 
     //save to elasticsearch
     if (post.status === 'SAVED') {
-      this.postsSearchService.indexPost(post);
+      await this.postsSearchService.indexPost(post);
     }
 
     const followers = await this.followService.findAllFollowers(profileId);
@@ -74,17 +74,18 @@ export class PostsService {
     });
   }
 
-  async findAllNew(profileId: string) {
+  async findAllNew(profileId: string, limit: number, offset: number) {
     console.log({ profileId });
 
     // new feeds of the peolple I follow = followees
     const cacheKey = `newFeedsFor:${profileId}`;
     const cachedData: any[] = await this.cacheManager.get(cacheKey);
+    let posts: any[] = [];
     if (cachedData) {
-      return cachedData;
+      posts = cachedData;
     } else {
       const followees = await this.followService.findAllFollowees(profileId);
-      const posts = await this.prisma.post.findMany({
+      posts = await this.prisma.post.findMany({
         where: {
           authorId: {
             in: followees,
@@ -95,8 +96,10 @@ export class PostsService {
         },
       });
       await this.cacheManager.set(cacheKey, posts);
-      return posts;
     }
+
+    // const paginatedPosts = posts.slice(offset - 1, offset - 1 + limit);
+    return posts;
   }
 
   findOne(id: number) {

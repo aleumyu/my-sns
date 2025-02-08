@@ -37,8 +37,11 @@ export class PostsController {
   }
 
   @Get('new')
-  findAllNew(@CurrentUser('profileId') profileId: string) {
-    return this.postsService.findAllNew(profileId);
+  findAllNew(
+    @CurrentUser('profileId') profileId: string,
+    @Body() { limit, offset }: { limit: number; offset: number },
+  ) {
+    return this.postsService.findAllNew(profileId, limit, offset);
   }
 
   // @Get(':id')

@@ -24,13 +24,14 @@ export default class SearchService {
   constructor(private readonly elasticsearchService: ElasticsearchService) {}
 
   async indexPost(post) {
+    const { id, title, body, authorId } = post;
     return this.elasticsearchService.index<PostSearchBody>({
       index: this.index,
       body: {
-        id: post.id,
-        title: post.title,
-        content: post.body,
-        authorId: post.authorId,
+        id,
+        title,
+        content: body,
+        authorId,
       },
     });
   }
