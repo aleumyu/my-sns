@@ -20,7 +20,7 @@ import { SearchModule } from 'src/search/search.module';
             clientId: 'nestjs-kafka',
             brokers: ['localhost:9092'],
             retry: {
-              retries: 10, // Number of retries
+              retries: 2, // Number of retries
               initialRetryTime: 300, // Initial retry time in ms
               maxRetryTime: 10000, // Maximum total retry time in ms
               factor: 0.2, // Exponential factor for backoff

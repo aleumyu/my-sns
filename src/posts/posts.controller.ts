@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Query,
+  ParseIntPipe,
   // Patch,
   // Param,
   // Delete,
@@ -39,9 +40,10 @@ export class PostsController {
   @Get('new')
   findAllNew(
     @CurrentUser('profileId') profileId: string,
-    @Body() { limit, offset }: { limit: number; offset: number },
+    @Query('page', ParseIntPipe) page: number,
+    @Query('offset', ParseIntPipe) offset: number,
   ) {
-    return this.postsService.findAllNew(profileId, limit, offset);
+    return this.postsService.findAllNew(profileId, page, offset);
   }
 
   // @Get(':id')
