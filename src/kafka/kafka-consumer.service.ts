@@ -9,6 +9,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PostsService } from 'src/posts/posts.service';
 import { FollowService } from 'src/follow/follow.service';
 import SearchService from 'src/search/search.service';
+import { ErrorService } from 'src/error/error.service';
+import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 // import { MailService } from 'src/mail/mail.service';
 
@@ -30,6 +32,9 @@ export class KafkaConsumerService implements OnModuleInit {
     private readonly postsService: PostsService,
     private readonly followService: FollowService,
     private postsSearchService: SearchService,
+    private kafkaProducerService: KafkaProducerService,
+    private readonly errorService: ErrorService,
+
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -45,24 +50,29 @@ export class KafkaConsumerService implements OnModuleInit {
       fromBeginning: true,
     });
 
+    await this.consumer.subscribe({
+      topic: 'errors',
+      fromBeginning: true,
+    });
+
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
         console.log({ topic }, { partition }, { message });
         console.log(`Received message from topic: ${topic}`);
 
         if (topic === 'post_created_cache') {
-          await this.handlePostCreatedCache(message);
+          await this.handlePostCreatedCache(message, topic);
         } else if (topic === 'post_created_es') {
-          await this.handlePostCreatedEs(message);
+          await this.handlePostCreatedEs(message, topic);
+        } else if (topic === 'error') {
+          await this.handleDeadLetterQueue(message);
         }
       },
     });
   }
 
   // @EventPattern('post_created_cache')
-  async handlePostCreatedCache(message: any) {
-    console.log('bonjour handlePostCreatedCache consumer');
-
+  async handlePostCreatedCache(message: any, topic: string) {
     try {
       const postData = JSON.parse(message.value.toString());
       const profileId = message.key.toString();
@@ -90,14 +100,27 @@ export class KafkaConsumerService implements OnModuleInit {
       // }
     } catch (error) {
       this.logger.error(error);
+      await this.kafkaProducerService.emitErrorEvent(message, topic);
     }
   }
 
   // @EventPattern('post_created_es')
-  async handlePostCreatedEs(message: any) {
-    console.log('bonjour handlePostCreatedEs consumer');
-    const postData = JSON.parse(message.value.toString());
-    await this.postsSearchService.indexPost(postData);
+  async handlePostCreatedEs(message: any, topic: string) {
+    try {
+      const postData = JSON.parse(message.value.toString());
+      await this.postsSearchService.indexPost(postData);
+    } catch (error) {
+      this.logger.error(error);
+      await this.kafkaProducerService.emitErrorEvent(message, topic);
+    }
+  }
+
+  async handleDeadLetterQueue(message: any) {
+    const messageInMessagee = JSON.parse(message.value);
+    const topic = message.key.toString();
+    const value = messageInMessagee.value.toString();
+    const key = messageInMessagee.key.toString();
+    this.errorService.saveMessageError({ topic, value, key });
   }
 
   async onModuleDestroy() {

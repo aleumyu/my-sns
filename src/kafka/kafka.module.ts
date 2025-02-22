@@ -6,6 +6,7 @@ import { KafkaConsumerService } from './kafka-consumer.service';
 import { PostsModule } from 'src/posts/posts.module';
 import { FollowModule } from 'src/follow/follow.module';
 import { SearchModule } from 'src/search/search.module';
+import { ErrorModule } from 'src/error/error.module';
 // import { MailModule } from 'src/mail/mail.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { SearchModule } from 'src/search/search.module';
     PostsModule,
     FollowModule,
     SearchModule,
+    ErrorModule,
   ],
   exports: [KafkaProducerService],
 })

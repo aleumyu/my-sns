@@ -18,6 +18,7 @@ import authConfig from './config/authConfig';
 import { AuthGuard } from './auth/auth.guard';
 import { SearchModule } from './search/search.module';
 import { KafkaModule } from './kafka/kafka.module';
+import { ErrorModule } from './error/error.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { KafkaModule } from './kafka/kafka.module';
     LikesModule,
     SearchModule,
     KafkaModule,
+    ErrorModule,
   ],
   controllers: [AppController],
   providers: [

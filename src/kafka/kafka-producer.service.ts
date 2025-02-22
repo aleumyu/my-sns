@@ -26,6 +26,13 @@ export class KafkaProducerService {
     });
   }
 
+  async emitErrorEvent(message, topic) {
+    await this.producer.send({
+      topic: 'errors',
+      messages: [{ key: topic, value: message }],
+    });
+  }
+
   async onModuleDestroy() {
     await this.producer.disconnect();
   }
