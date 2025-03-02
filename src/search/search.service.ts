@@ -19,10 +19,7 @@ interface SearchResult {
 
 @Injectable()
 export default class SearchService {
-  constructor(
-    index: string,
-    private readonly elasticsearchService: ElasticsearchService,
-  ) {}
+  constructor(private readonly elasticsearchService: ElasticsearchService) {}
 
   async indexPost(post, index: string) {
     const { id, title, body, authorId } = post;
