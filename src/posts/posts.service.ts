@@ -67,6 +67,7 @@ export class PostsService {
     if (!ids.length) {
       return [];
     }
+    // 다시 데이타베이스에 쿼리할 필요가 있나?
     return this.prisma.post.findMany({
       where: { id: { in: ids } },
     });

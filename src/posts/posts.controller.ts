@@ -29,6 +29,7 @@ export class PostsController {
     return this.postsService.create(profileId, createPostDto);
   }
 
+  //고치기
   @Get()
   findAll(@Query('search') search: string) {
     if (search) {

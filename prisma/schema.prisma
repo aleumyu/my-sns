@@ -95,9 +95,9 @@ model Ticket {
   event         Event     @relation(fields: [eventId], references: [id])
   createdAt     DateTime  @default(now())  
   updatedAt     DateTime  @default(now()) 
-  status        Status
-  bookingId     String
-  booking       Booking   @relation(fields: [bookingId], references: [id])
+  status        Status    @default(AVAILABLE)
+  bookingId     String?
+  booking       Booking?   @relation(fields: [bookingId], references: [id])
 
 }
 

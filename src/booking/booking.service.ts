@@ -4,8 +4,20 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 
 @Injectable()
 export class BookingService {
-  create(createBookingDto: CreateBookingDto) {
-    return 'This action adds a new booking';
+  create(profileId, createBookingDto: CreateBookingDto) {
+    // change ticket status
+    // connect and send payment info to payment provider like stripe
+    const result = 'success';
+
+    if (result === 'success') {
+      // ticket status to sold
+      // save booking, status with succss
+      // return success
+    } else {
+      // ticket status to available
+      // save booking status with fail
+      // return fail
+    }
   }
 
   findAll() {

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
@@ -7,9 +15,12 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
-  @Post()
-  create(@Body() createTicketDto: CreateTicketDto) {
-    return this.ticketsService.create(createTicketDto);
+  @Post(':eventId')
+  create(
+    @Body() createTicketDto: CreateTicketDto[],
+    @Param('eventId') eventId: string,
+  ) {
+    return this.ticketsService.create(createTicketDto, eventId);
   }
 
   @Get()
