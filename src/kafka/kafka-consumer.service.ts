@@ -1,10 +1,8 @@
 import { Kafka } from 'kafkajs';
-import { Cache } from 'cache-manager';
 import Redis from 'ioredis';
 
-import { Injectable, OnModuleInit, Logger, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 // import { EventPattern } from '@nestjs/microservices';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 import { PostsService } from 'src/posts/posts.service';
 import { FollowService } from 'src/follow/follow.service';
@@ -34,8 +32,6 @@ export class KafkaConsumerService implements OnModuleInit {
     private postsSearchService: SearchService,
     private kafkaProducerService: KafkaProducerService,
     private readonly errorService: ErrorService,
-
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async onModuleInit() {

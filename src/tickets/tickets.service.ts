@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
-import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Status } from '@prisma/client';
 @Injectable()
 export class TicketsService {
   constructor(private prisma: PrismaService) {}
@@ -27,8 +27,12 @@ export class TicketsService {
     return `This action returns a #${id} ticket`;
   }
 
-  update(id: number, updateTicketDto: UpdateTicketDto) {
-    return `This action updates a #${id} ticket`;
+  async updateStatus(ticketIds: string[], status: Status) {
+    const tickets = await this.prisma.ticket.updateMany({
+      where: { id: { in: ticketIds } },
+      data: { status },
+    });
+    return tickets;
   }
 
   remove(id: number) {

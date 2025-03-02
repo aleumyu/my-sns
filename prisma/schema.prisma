@@ -98,6 +98,7 @@ model Ticket {
   status        Status    @default(AVAILABLE)
   bookingId     String?
   booking       Booking?   @relation(fields: [bookingId], references: [id])
+  @@unique([bookingId, eventId])
 
 }
 

@@ -25,6 +25,7 @@ import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
+    // is this actually needed? need to check
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: async () => {

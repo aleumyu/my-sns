@@ -1,22 +1,90 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { TicketsService } from 'src/tickets/tickets.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class BookingService {
-  create(profileId, createBookingDto: CreateBookingDto) {
-    // change ticket status
-    // connect and send payment info to payment provider like stripe
-    const result = 'success';
+  constructor(
+    private ticketsService: TicketsService,
+    private prisma: PrismaService,
+    private redisService: RedisService,
+  ) {}
+  async create(profileId, createBookingDto: CreateBookingDto) {
+    const { ticketIds, paymentInfo } = createBookingDto;
 
-    if (result === 'success') {
-      // ticket status to sold
-      // save booking, status with succss
-      // return success
-    } else {
-      // ticket status to available
-      // save booking status with fail
-      // return fail
+    try {
+      //1. lock tickets in redis
+      const lockResults = await Promise.all(
+        ticketIds.map((ticketId) => {
+          const result = this.redisService.lockTicket(ticketId, profileId);
+          return { ticketId: ticketId, result: result };
+        }),
+      );
+      const failedLockTickets = lockResults.filter(
+        (lockResult) => !lockResult.result,
+      );
+
+      //2. if failed to lock tickets, release all locked tickets and throw error
+      if (failedLockTickets.length > 0) {
+        await Promise.all(
+          failedLockTickets.map((ticket) =>
+            this.redisService.unlockTicket(ticket.ticketId, profileId),
+          ),
+        );
+        throw new Error('Failed to lock tickets');
+      }
+
+      // 3. change ticket status to pending
+      await this.ticketsService.updateStatus(ticketIds, 'PENDING');
+
+      //4. connect and send payment info to payment provider like stripe
+      const paymentResult = await fakePaymentService(paymentInfo);
+
+      // 5-1. if payment success, change ticket status to sold, Create booking record, and release lock
+      if (paymentResult) {
+        // probably better to use transaction here for ticket updat and booking creation
+        await this.ticketsService.updateStatus(ticketIds, 'SOLD');
+        const booking = await this.prisma.booking.create({
+          data: {
+            buyerId: profileId,
+            paymentInfo,
+            tickets: {
+              connect: ticketIds.map((id) => ({ id })),
+            },
+          },
+          include: {
+            tickets: true,
+          },
+        });
+        await Promise.all(
+          ticketIds.map((ticketId) =>
+            this.redisService.unlockTicket(ticketId, profileId),
+          ),
+        );
+        return {
+          status: 'success',
+          booking,
+        };
+      } else {
+        // 5-2. if payment failed, change ticket status to available and release lock
+        await this.ticketsService.updateStatus(ticketIds, 'AVAILABLE');
+        // we  don't create booking record as payment failed.
+        // maybe we can create a booking record with status failed??
+        await Promise.all(
+          ticketIds.map((ticketId) =>
+            this.redisService.unlockTicket(ticketId, profileId),
+          ),
+        );
+        return {
+          status: 'failed',
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      throw new Error('Booking failed');
     }
   }
 
@@ -35,4 +103,8 @@ export class BookingService {
   remove(id: number) {
     return `This action removes a #${id} booking`;
   }
+}
+
+async function fakePaymentService(paymentInfo: any) {
+  return true;
 }

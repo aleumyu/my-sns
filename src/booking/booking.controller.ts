@@ -16,7 +16,7 @@ import { CurrentUser } from 'src/current-user.decorator';
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
-  @Post('/:eventId')
+  @Post()
   create(
     @CurrentUser('profileId') profileId: string,
     @Body() createBookingDto: CreateBookingDto,

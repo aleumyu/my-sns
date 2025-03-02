@@ -1,7 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+
 import Redis from 'ioredis';
 
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -20,7 +19,6 @@ export class PostsService {
     private readonly followService: FollowService,
     private postsSearchService: SearchService,
     private kafkaProducerService: KafkaProducerService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     // this.onModuleInit();
   }
