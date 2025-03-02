@@ -1,32 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 
-interface PostSearchBody {
+interface SearchBody {
   id: number;
   title: string;
-  content: string;
-  authorId: number;
+  content?: string;
+  authorId?: number;
 }
 
-interface PostSearchResult {
+interface SearchResult {
   hits: {
     total: number;
     hits: Array<{
-      _source: PostSearchBody[];
+      _source: SearchBody[];
     }>;
   };
 }
 
 @Injectable()
 export default class SearchService {
-  index = 'posts';
+  constructor(
+    index: string,
+    private readonly elasticsearchService: ElasticsearchService,
+  ) {}
 
-  constructor(private readonly elasticsearchService: ElasticsearchService) {}
-
-  async indexPost(post) {
+  async indexPost(post, index: string) {
     const { id, title, body, authorId } = post;
-    return this.elasticsearchService.index<PostSearchBody>({
-      index: this.index,
+    return await this.elasticsearchService.index<SearchBody>({
+      index,
       body: {
         id,
         title,
@@ -36,20 +37,29 @@ export default class SearchService {
     });
   }
 
-  async search(text: string) {
-    const result = await this.elasticsearchService.search<PostSearchResult>({
-      index: this.index,
+  async search(text: string, index: string) {
+    const fields =
+      index === 'posts' ? ['title', 'content'] : ['title', 'description'];
+
+    const result = await this.elasticsearchService.search<SearchResult>({
+      index: index,
       body: {
         query: {
           multi_match: {
             query: text,
-            fields: ['title', 'content'],
+            fields,
           },
         },
       },
     });
-    console.log('hola es result', JSON.stringify(result, null, 2));
     return result.hits.hits.map((item) => item._source);
+  }
+
+  async indexEvent(event, index: string) {
+    return await this.elasticsearchService.index<SearchBody>({
+      index,
+      body: event,
+    });
   }
 
   // async remove(postId: number) {

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
-import { UpdateBookingDto } from './dto/update-booking.dto';
 import { TicketsService } from 'src/tickets/tickets.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -45,20 +44,19 @@ export class BookingService {
 
       // 5-1. if payment success, change ticket status to sold, Create booking record, and release lock
       if (paymentResult) {
-        // probably better to use transaction here for ticket updat and booking creation
-        await this.ticketsService.updateStatus(ticketIds, 'SOLD');
-        const booking = await this.prisma.booking.create({
-          data: {
-            buyerId: profileId,
-            paymentInfo,
-            tickets: {
-              connect: ticketIds.map((id) => ({ id })),
+        const result = await this.prisma.$transaction([
+          this.prisma.ticket.updateMany({
+            where: { id: { in: ticketIds } },
+            data: { status: 'SOLD' },
+          }),
+          this.prisma.booking.create({
+            data: {
+              buyerId: profileId,
+              paymentInfo,
+              tickets: { connect: ticketIds.map((id) => ({ id })) },
             },
-          },
-          include: {
-            tickets: true,
-          },
-        });
+          }),
+        ]);
         await Promise.all(
           ticketIds.map((ticketId) =>
             this.redisService.unlockTicket(ticketId, profileId),
@@ -66,13 +64,13 @@ export class BookingService {
         );
         return {
           status: 'success',
-          booking,
+          result,
         };
       } else {
         // 5-2. if payment failed, change ticket status to available and release lock
         await this.ticketsService.updateStatus(ticketIds, 'AVAILABLE');
         // we  don't create booking record as payment failed.
-        // maybe we can create a booking record with status failed??
+        // QUESTION: maybe it would be better to create a booking record with status failed (status column in booking table)
         await Promise.all(
           ticketIds.map((ticketId) =>
             this.redisService.unlockTicket(ticketId, profileId),
@@ -96,9 +94,9 @@ export class BookingService {
     return `This action returns a #${id} booking`;
   }
 
-  update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
-  }
+  // update(id: number, updateBookingDto: UpdateBookingDto) {
+  //   return `This action updates a #${id} booking`;
+  // }
 
   remove(id: number) {
     return `This action removes a #${id} booking`;
@@ -106,5 +104,6 @@ export class BookingService {
 }
 
 async function fakePaymentService(paymentInfo: any) {
+  console.log('paymentInfo', paymentInfo);
   return true;
 }

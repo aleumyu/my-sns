@@ -46,7 +46,6 @@ export class PostsService {
     });
 
     //save to elasticsearch+cache
-    // Question: how to handle if there is an error and rollback??
     if (post.status === 'SAVED') {
       await this.kafkaProducerService.emitCreatePostEsEvent(post);
       await this.kafkaProducerService.emitCreatePostCacheEvent(profileId, post);
@@ -60,12 +59,12 @@ export class PostsService {
   }
 
   async searchForPosts(text: string) {
-    const results = await this.postsSearchService.search(text);
+    const results = await this.postsSearchService.search(text, 'posts');
     const ids = results.map((result: any) => result.id);
     if (!ids.length) {
       return [];
     }
-    // 다시 데이타베이스에 쿼리할 필요가 있나?
+    // QUESTION:다시 데이타베이스에 쿼리할 필요가 있나?
     return this.prisma.post.findMany({
       where: { id: { in: ids } },
     });

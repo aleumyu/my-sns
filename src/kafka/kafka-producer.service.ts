@@ -33,6 +33,13 @@ export class KafkaProducerService {
     });
   }
 
+  async emitCreateEventEsEvent(event: any) {
+    await this.producer.send({
+      topic: 'event_created_es',
+      messages: [{ key: '', value: JSON.stringify(event) }],
+    });
+  }
+
   async onModuleDestroy() {
     await this.producer.disconnect();
   }

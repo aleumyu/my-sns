@@ -29,7 +29,7 @@ export class KafkaConsumerService implements OnModuleInit {
   constructor(
     private readonly postsService: PostsService,
     private readonly followService: FollowService,
-    private postsSearchService: SearchService,
+    private searchService: SearchService,
     private kafkaProducerService: KafkaProducerService,
     private readonly errorService: ErrorService,
   ) {}
@@ -62,6 +62,8 @@ export class KafkaConsumerService implements OnModuleInit {
           await this.handlePostCreatedEs(message, topic);
         } else if (topic === 'error') {
           await this.handleDeadLetterQueue(message);
+        } else if (topic === 'event_created_es') {
+          await this.handleCreateEventEsEvent(message);
         }
       },
     });
@@ -104,11 +106,16 @@ export class KafkaConsumerService implements OnModuleInit {
   async handlePostCreatedEs(message: any, topic: string) {
     try {
       const postData = JSON.parse(message.value.toString());
-      await this.postsSearchService.indexPost(postData);
+      await this.searchService.indexPost(postData, 'posts');
     } catch (error) {
       this.logger.error(error);
       await this.kafkaProducerService.emitErrorEvent(message, topic);
     }
+  }
+
+  async handleCreateEventEsEvent(message: any) {
+    const eventData = JSON.parse(message.value.toString());
+    await this.searchService.indexEvent(eventData, 'events');
   }
 
   async handleDeadLetterQueue(message: any) {
