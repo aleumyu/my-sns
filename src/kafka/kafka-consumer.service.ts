@@ -2,15 +2,12 @@ import { Kafka } from 'kafkajs';
 import Redis from 'ioredis';
 
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-// import { EventPattern } from '@nestjs/microservices';
 
 import { PostsService } from 'src/posts/posts.service';
 import { FollowService } from 'src/follow/follow.service';
 import SearchService from 'src/search/search.service';
 import { ErrorService } from 'src/error/error.service';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
-
-// import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit {

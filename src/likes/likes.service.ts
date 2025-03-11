@@ -2,7 +2,6 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { CreateLikeDto } from './dto/create-like.dto';
-// import { UpdateLikeDto } from './dto/update-like.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -59,12 +58,4 @@ export class LikesService {
       },
     });
   }
-
-  // update(id: string, updateLikeDto: UpdateLikeDto) {
-  //   return `This action updates a #${id} like`;
-  // }
-
-  // remove(id: string) {
-  //   return `This action removes a #${id} like`;
-  // }
 }

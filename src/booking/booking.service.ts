@@ -94,10 +94,6 @@ export class BookingService {
     return `This action returns a #${id} booking`;
   }
 
-  // update(id: number, updateBookingDto: UpdateBookingDto) {
-  //   return `This action updates a #${id} booking`;
-  // }
-
   remove(id: number) {
     return `This action removes a #${id} booking`;
   }

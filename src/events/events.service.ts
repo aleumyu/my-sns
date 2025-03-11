@@ -32,14 +32,6 @@ export class EventsService {
     return `This action returns a #${id} event`;
   }
 
-  // update(id: number, updateEventDto: UpdateEventDto) {
-  //   return `This action updates a #${id} event`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} event`;
-  // }
-
   async search(
     keyword?: string,
     venue?: string,

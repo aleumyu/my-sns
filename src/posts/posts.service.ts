@@ -110,14 +110,4 @@ export class PostsService {
   findOne(id: number) {
     return `This action returns a #${id} post`;
   }
-
-  // update(id: number, updatePostDto: UpdatePostDto) {
-  //   return `This action updates a #${id} post`;
-  // }
-
-  // remove(id: number) {
-  // should include logic to delete from elasticsearch
-  // should include logic to delete from cache
-  //   return `This action removes a #${id} post`;
-  // }
 }
