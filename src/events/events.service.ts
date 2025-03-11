@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import SearchService from '../search/search.service';
+import SearchService, { PaginatedResponse } from '../search/search.service';
 import { KafkaProducerService } from '../kafka/kafka-producer.service';
+
+export type SearchParams = {
+  keyword?: string;
+  venue?: string;
+  start?: string;
+  end?: string;
+};
 
 @Injectable()
 export class EventsService {
@@ -33,70 +40,34 @@ export class EventsService {
   }
 
   async search(
-    keyword?: string,
-    venue?: string,
-    start?: string,
-    end?: string,
+    search: SearchParams,
     pageSize?: number,
     page?: number,
-  ) {
-    const where = {
-      AND: [] as any[],
-    };
+  ): Promise<PaginatedResponse[]> {
     // QUESTION: is this right way to do search?
     // elasticsearch for keyword search and the rest of the query params are for prisma?
     // or should I use elasticsearch for all query params + pagination?
-    if (keyword) {
-      const results = await this.searchService.search(keyword, 'events');
-      where.AND.push({
-        id: { in: results.map((result: any) => result.id) },
-      });
-      // where.AND.push({
-      //   OR: [
-      //     { title: { contains: keyword, mode: 'insensitive' } },
-      //     { description: { contains: keyword, mode: 'insensitive' } },
-      //   ],
-      // });
-    }
-
-    if (venue) {
-      where.AND.push({
-        venue: { contains: venue, mode: 'insensitive' },
-      });
-    }
-
-    if (start) {
-      where.AND.push({
-        start: { gte: start },
-      });
-    }
-
-    if (end) {
-      where.AND.push({
-        end: { lte: end },
-      });
-    }
-
-    const [items, total] = await Promise.all([
-      this.prisma.event.findMany({
-        where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: {
-          start: 'asc',
-        },
-      }),
-      this.prisma.event.count({ where }),
-    ]);
-
-    return {
-      items,
-      meta: {
-        total,
+    if (search) {
+      const results = await this.searchService.search({
+        search,
+        index: 'events',
         page,
         pageSize,
-        totalPages: Math.ceil(total / pageSize),
+      });
+      if (Array.isArray(results)) {
+        return results;
+      }
+      return results.items;
+    }
+
+    const results = await this.prisma.event.findMany({
+      orderBy: {
+        start: 'asc',
       },
-    };
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return results;
   }
 }

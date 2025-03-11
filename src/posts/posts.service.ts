@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FollowService } from 'src/follow/follow.service';
-import SearchService from 'src/search/search.service';
+import SearchService, { SearchBody } from 'src/search/search.service';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Injectable()
@@ -58,16 +58,15 @@ export class PostsService {
     return `This action returns all posts`;
   }
 
-  async searchForPosts(text: string) {
-    const results = await this.postsSearchService.search(text, 'posts');
-    const ids = results.map((result: any) => result.id);
-    if (!ids.length) {
-      return [];
-    }
-    // QUESTION:다시 데이타베이스에 쿼리할 필요가 있나?
-    return this.prisma.post.findMany({
-      where: { id: { in: ids } },
+  async searchForPosts(text: string): Promise<SearchBody[]> {
+    const results = await this.postsSearchService.search({
+      text,
+      index: 'posts',
     });
+    if (Array.isArray(results)) {
+      return results;
+    }
+    return [];
   }
 
   async findAllNew(profileId: string, page: number, offset: number) {

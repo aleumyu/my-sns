@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
+import { SearchParams } from './events.service';
 
 @Controller('events')
 export class EventsController {
@@ -11,31 +12,14 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
-  @Get()
-  findAll() {
-    return this.eventsService.findAll();
-  }
-
   //GET /events/search?keyword={keyword}&start={start_date}&end={end_date}&pageSize={page_size}&page={page_number}
-  // QUESTION: is it better to have GET /events and GET /events/search? separate endpoints?
-  // or can I use /events/search for all cases so if there is no query param then it will return all events?
-  @Get('search')
+  @Get()
   search(
-    @Query('keyword') keyword?: string,
-    @Query('venue') venue?: string,
-    @Query('start') start?: string,
-    @Query('end') end?: string,
+    @Query('search') search?: SearchParams,
     @Query('pageSize') pageSize?: number,
     @Query('page') page?: number,
   ) {
-    return this.eventsService.search(
-      keyword,
-      venue,
-      start,
-      end,
-      pageSize,
-      page,
-    );
+    return this.eventsService.search(search, pageSize, page);
   }
 
   @Get(':id')
