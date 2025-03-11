@@ -3,6 +3,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { TicketsService } from 'src/tickets/tickets.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
+import { Status } from '@prisma/client';
 
 @Injectable()
 export class BookingService {
@@ -19,7 +20,7 @@ export class BookingService {
       const lockResults = await Promise.all(
         ticketIds.map((ticketId) => {
           const result = this.redisService.lockTicket(ticketId, profileId);
-          return { ticketId: ticketId, result: result };
+          return { ticketId, result };
         }),
       );
       const failedLockTickets = lockResults.filter(
@@ -37,7 +38,7 @@ export class BookingService {
       }
 
       // 3. change ticket status to pending
-      await this.ticketsService.updateStatus(ticketIds, 'PENDING');
+      await this.ticketsService.updateStatus(ticketIds, Status.PENDING);
 
       //4. connect and send payment info to payment provider like stripe
       const paymentResult = await fakePaymentService(paymentInfo);
@@ -47,7 +48,7 @@ export class BookingService {
         const result = await this.prisma.$transaction([
           this.prisma.ticket.updateMany({
             where: { id: { in: ticketIds } },
-            data: { status: 'SOLD' },
+            data: { status: Status.SOLD },
           }),
           this.prisma.booking.create({
             data: {
@@ -68,7 +69,7 @@ export class BookingService {
         };
       } else {
         // 5-2. if payment failed, change ticket status to available and release lock
-        await this.ticketsService.updateStatus(ticketIds, 'AVAILABLE');
+        await this.ticketsService.updateStatus(ticketIds, Status.AVAILABLE);
         // we  don't create booking record as payment failed.
         // QUESTION: maybe it would be better to create a booking record with status failed (status column in booking table)
         await Promise.all(
