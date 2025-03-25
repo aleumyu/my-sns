@@ -65,10 +65,6 @@ export class UsersService {
     });
   }
 
-  // findAll() {
-  //   return `This action returns all user`;
-  // }
-
   async getUserInfo(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) {

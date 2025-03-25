@@ -19,9 +19,13 @@ import { AuthGuard } from './auth/auth.guard';
 import { SearchModule } from './search/search.module';
 import { KafkaModule } from './kafka/kafka.module';
 import { ErrorModule } from './error/error.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { EventsModule } from './events/events.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
+    // is this actually needed? need to check
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: async () => {
@@ -46,6 +50,9 @@ import { ErrorModule } from './error/error.module';
     SearchModule,
     KafkaModule,
     ErrorModule,
+    TicketsModule,
+    EventsModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [

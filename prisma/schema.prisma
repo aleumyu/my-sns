@@ -27,11 +27,12 @@ model  Profile {
   userId        String       @unique
   user          User         @relation(fields: [userId], references: [id])
   name          String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime     @default(now())
   Posts         Post[]
   Likes         Like[]
-  followers     Follow[]  @relation("follower")
-  followees     Follow[]  @relation("followee")
+  followers     Follow[]     @relation("follower")
+  followees     Follow[]     @relation("followee")
+  Booking       Booking[]
 }
 
 model Follow {
@@ -72,4 +73,46 @@ model Error {
   value         String    @db.Text
   origin        String
   createdAt     DateTime  @default(now())
+}
+
+model Event {
+  id            String    @id @default(uuid())
+  title         String
+  description   String    @db.Text
+  venue         String    
+  start         DateTime
+  end           DateTime
+  performer     String
+  tickets       Ticket[]  
+  createdAt     DateTime  @default(now())
+}
+
+model Ticket {
+  id            String    @id @default(uuid())
+  seat          String
+  price         Int   
+  eventId       String    
+  event         Event     @relation(fields: [eventId], references: [id])
+  createdAt     DateTime  @default(now())  
+  updatedAt     DateTime  @default(now()) 
+  status        Status    @default(AVAILABLE)
+  bookingId     String?
+  booking       Booking?   @relation(fields: [bookingId], references: [id])
+  @@unique([bookingId, eventId])
+
+}
+
+model Booking {
+  id            String    @id @default(uuid())
+  tickets       Ticket[]  
+  buyerId        String
+  profile       Profile   @relation(fields: [buyerId], references: [id])
+  paymentInfo   String
+  createdAt     DateTime  @default(now())  
+}
+
+enum Status {
+  AVAILABLE
+  PENDING
+  SOLD
 }

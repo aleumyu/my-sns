@@ -1,18 +1,13 @@
 import { Kafka } from 'kafkajs';
-import { Cache } from 'cache-manager';
 import Redis from 'ioredis';
 
-import { Injectable, OnModuleInit, Logger, Inject } from '@nestjs/common';
-// import { EventPattern } from '@nestjs/microservices';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 
 import { PostsService } from 'src/posts/posts.service';
 import { FollowService } from 'src/follow/follow.service';
 import SearchService from 'src/search/search.service';
 import { ErrorService } from 'src/error/error.service';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
-
-// import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit {
@@ -31,11 +26,9 @@ export class KafkaConsumerService implements OnModuleInit {
   constructor(
     private readonly postsService: PostsService,
     private readonly followService: FollowService,
-    private postsSearchService: SearchService,
+    private searchService: SearchService,
     private kafkaProducerService: KafkaProducerService,
     private readonly errorService: ErrorService,
-
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async onModuleInit() {
@@ -66,6 +59,8 @@ export class KafkaConsumerService implements OnModuleInit {
           await this.handlePostCreatedEs(message, topic);
         } else if (topic === 'error') {
           await this.handleDeadLetterQueue(message);
+        } else if (topic === 'event_created_es') {
+          await this.handleCreateEventEsEvent(message);
         }
       },
     });
@@ -108,11 +103,16 @@ export class KafkaConsumerService implements OnModuleInit {
   async handlePostCreatedEs(message: any, topic: string) {
     try {
       const postData = JSON.parse(message.value.toString());
-      await this.postsSearchService.indexPost(postData);
+      await this.searchService.indexPost(postData, 'posts');
     } catch (error) {
       this.logger.error(error);
       await this.kafkaProducerService.emitErrorEvent(message, topic);
     }
+  }
+
+  async handleCreateEventEsEvent(message: any) {
+    const eventData = JSON.parse(message.value.toString());
+    await this.searchService.indexEvent(eventData, 'events');
   }
 
   async handleDeadLetterQueue(message: any) {

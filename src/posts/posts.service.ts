@@ -1,12 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
+
 import Redis from 'ioredis';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FollowService } from 'src/follow/follow.service';
-import SearchService from 'src/search/search.service';
+import SearchService, { SearchBody } from 'src/search/search.service';
 import { KafkaProducerService } from 'src/kafka/kafka-producer.service';
 
 @Injectable()
@@ -20,7 +19,6 @@ export class PostsService {
     private readonly followService: FollowService,
     private postsSearchService: SearchService,
     private kafkaProducerService: KafkaProducerService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     // this.onModuleInit();
   }
@@ -48,7 +46,6 @@ export class PostsService {
     });
 
     //save to elasticsearch+cache
-    // Question: how to handle if there is an error and rollback??
     if (post.status === 'SAVED') {
       await this.kafkaProducerService.emitCreatePostEsEvent(post);
       await this.kafkaProducerService.emitCreatePostCacheEvent(profileId, post);
@@ -61,15 +58,15 @@ export class PostsService {
     return `This action returns all posts`;
   }
 
-  async searchForPosts(text: string) {
-    const results = await this.postsSearchService.search(text);
-    const ids = results.map((result: any) => result.id);
-    if (!ids.length) {
-      return [];
-    }
-    return this.prisma.post.findMany({
-      where: { id: { in: ids } },
+  async searchForPosts(text: string): Promise<SearchBody[]> {
+    const results = await this.postsSearchService.search({
+      text,
+      index: 'posts',
     });
+    if (Array.isArray(results)) {
+      return results;
+    }
+    return [];
   }
 
   async findAllNew(profileId: string, page: number, offset: number) {
@@ -112,14 +109,4 @@ export class PostsService {
   findOne(id: number) {
     return `This action returns a #${id} post`;
   }
-
-  // update(id: number, updatePostDto: UpdatePostDto) {
-  //   return `This action updates a #${id} post`;
-  // }
-
-  // remove(id: number) {
-  // should include logic to delete from elasticsearch
-  // should include logic to delete from cache
-  //   return `This action removes a #${id} post`;
-  // }
 }
