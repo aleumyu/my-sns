@@ -3,8 +3,9 @@
 A toy project to explore:
 
 - JWT vs. Session
-- ...
-- ...
+- Kafka
+- Change Data Capture (CDC) architecture
+- Distributed Lock with Reis 
 
 ## Project setup
 
@@ -52,14 +53,4 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Resources
 
-# Users
-
-| ROUTE        | Method |
-| ------------ | :----: |
-| /users       |  POST  |
-| /users/login |  POST  |
-| /users/:id   |  GET   |
-| /users/:id   | PATCH  |
-| /users/:id   | DELETE |
