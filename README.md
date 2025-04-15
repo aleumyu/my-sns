@@ -5,7 +5,7 @@ A toy project to explore:
 - JWT vs. Session
 - Kafka
 - Change Data Capture (CDC) architecture
-- Distributed Lock with Reis 
+- Distributed Lock with Redis 
 
 ## Project setup
 
